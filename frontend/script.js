@@ -75,7 +75,7 @@ document.getElementById("login-button").addEventListener("click", async (event) 
       window.localStorage.setItem('user', response.data.UserId);
       window.localStorage.setItem('token', response.data.token);
 
-      window.location.href = "/";
+      window.location.href = "/frontend/chats";
     }
   } catch (error) {
     if (error.response) {
