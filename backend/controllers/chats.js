@@ -14,7 +14,6 @@ export const SendChat = async (req, res) => {
       }
       const UserId = user.id;
       const chat = await Chat.create({ UserId, message });
-      console.log(chat);
       return res.status(201).json({
         success: true,
         message: "Chat message stored successfully",
@@ -28,19 +27,16 @@ export const SendChat = async (req, res) => {
 
   export const getUserChats = async (req, res) => {
     const UserId = req.params.id;
-    console.log(UserId);
     
     try {
-      // Check if the user exists
       const user = await Users.findByPk(UserId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
   
-      // Fetch chats for the user and sort them by creation time in ascending order
       const chats = await Chat.findAll({
         where: { UserId },
-        order: [['createdAt', 'ASC']], // Sort by createdAt in ascending order (old chats first)
+        order: [['createdAt', 'ASC']], 
       });
   
       if (!chats || chats.length === 0) {
