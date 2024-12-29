@@ -16,9 +16,9 @@ export const Chat = sequelize.define(
         allowNull: false,
         // unique: true,
       },
-
     }
   );
+  
   
   
   sequelize.sync();

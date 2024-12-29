@@ -7,16 +7,14 @@ import helmet from 'helmet';
 import compression from 'compression';
 // import fs from "fs";
 // import { fileURLToPath } from 'url';
+
 //Routes
 import loginRouter from './routes/userLogin.js';
-// import expenseRouter from './routes/expense.js'
-// import orderRoutes from './routes/order.js';
+import sendChatRouter from './routes/chats.js';
+//Models
 import { Users } from './models/User.js';
-// import { Expense } from './models/expense.js';
-// import { Orders } from './models/orders.js';
 import { forgotPasswordRequests } from './models/forgotPasswordRequests.js';
-// import morgan from 'morgan';
-// import path from 'path';
+import { Chat } from './models/ChatModel.js';
 
 app.use(
   cors({
@@ -32,16 +30,19 @@ dotenv.config();
 
 app.use(helmet());
 app.use(compression());
-// app.use(morgan('combined',{stream:logsData}))
 app.use(express.urlencoded({ extended: true }));
 app.use(json());
-// app.use("/api/premium", orderRoutes);
-// app.use("/api/expense", expenseRouter);
+
+//Routes
+app.use('/api', sendChatRouter);
 app.use("/api", loginRouter);
 app.get("/", (req, res) => {
   res.json("Welcome to Expense Tracker!!!!");
 });
 
+
+
+//server
 const start = async () => {
   try {
     app.listen(process.env.PORT, () => {
@@ -51,15 +52,16 @@ const start = async () => {
     console.log(error);
   }
 };
-// Users.hasMany(Expense, { foreignKey: "UserId" });
-// Expense.belongsTo(Users, { foreignKey: "UserId" });
 
-// Users.hasMany(Orders, { foreignKey: "UserId" });
-// Orders.belongsTo(Users, { foreignKey: "UserId" });
+
+//Associations
+Users.hasMany(Chat, { foreignKey: "UserId" });
+Chat.belongsTo(Users, { foreignKey: "UserId" });
 
 Users.hasMany(forgotPasswordRequests, { foreignKey: "UserId" });
 forgotPasswordRequests.belongsTo(Users, { foreignKey: "UserId" });
-// Sync models
+
+
 sequelize
   .sync({ alter: true }) // use { force: true } only in development; it drops and recreates tables
   .then(() => {
