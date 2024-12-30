@@ -19,6 +19,4 @@ export const Chat = sequelize.define(
     }
   );
   
-  
-  
   sequelize.sync();

@@ -28,64 +28,67 @@ document.getElementById('send').addEventListener('click', async function () {
     document.getElementById('message').value = '';
 });
 
+const LOCAL_STORAGE_KEY = "user_chats"; // Key for storing chats in local storage
 
-document.addEventListener('DOMContentLoaded', async function () {
-    const id = window.localStorage.getItem('user');
-    const chatContainer = document.getElementById('chats');
-    const LOCAL_STORAGE_KEY = `user_${id}_chats`;
-    const MAX_CHATS = 10;
+function loadChatsFromLocalStorage() {
+    const storedChats = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || [];
+    const chatContainer = document.getElementById("chats");
+    chatContainer.innerHTML = ""; // Clear chat container
 
-    // Load existing chats from local storage
-    const loadChatsFromLocalStorage = () => {
-        const storedChats = JSON.parse(window.localStorage.getItem(LOCAL_STORAGE_KEY)) || [];
-        chatContainer.innerHTML = "";
-        storedChats.forEach(chat => {
-            const message = document.createElement('p');
-            message.textContent = "user: " + chat.message;
-            chatContainer.appendChild(message);
+    storedChats.forEach((chat) => {
+        const message = document.createElement("p");
+        message.textContent = `user: ${chat.message}`;
+        chatContainer.appendChild(message);
+    });
+
+    return storedChats;
+}
+
+function saveChatsToLocalStorage(newChats) {
+    const storedChats = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || [];
+    const updatedChats = [...storedChats, ...newChats].slice(-10); // Keep only the last 10 chats
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedChats));
+}
+
+async function fetchNewChats(userId, lastTimestamp) {
+    try {
+        const response = await axios.get(`${base_url}/api/userchats/${userId}`, {
+            params: { lastTimestamp },
         });
-        return storedChats;
-    };
+        return response.data.data || [];
+    } catch (error) {
+        console.error("Error fetching chats:", error);
+        return [];
+    }
+}
 
-    // Save chats to local storage (maintain only the latest 10)
-    const saveChatsToLocalStorage = (chats) => {
-        const storedChats = JSON.parse(window.localStorage.getItem(LOCAL_STORAGE_KEY)) || [];
-        const updatedChats = [...storedChats, ...chats].slice(-MAX_CHATS); // Keep only the last 10 chats
-        window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedChats));
-    };
+document.addEventListener("DOMContentLoaded", async function () {
+    const userId = localStorage.getItem("user");
+    if (!userId) {
+        console.error("User ID not found in local storage.");
+        return;
+    }
 
-    // Load chats from local storage initially
     let storedChats = loadChatsFromLocalStorage();
-    let lastMessageTimestamp = storedChats.length ? storedChats[storedChats.length - 1].createdAt : null;
+    let lastTimestamp = storedChats.length
+        ? new Date(storedChats[storedChats.length - 1].createdAt).toISOString()
+        : null;
 
-    // Polling for new messages
     setInterval(async () => {
-        try {
-            const response = await axios.get(`${base_url}/api/userchats/${id}`, {
-                params: { lastTimestamp: lastMessageTimestamp } // Pass the timestamp of the latest message
+        const newChats = await fetchNewChats(userId, lastTimestamp);
+
+        if (newChats.length) {
+            const chatContainer = document.getElementById("chats");
+            newChats.forEach((chat) => {
+                const message = document.createElement("p");
+                message.textContent = `user: ${chat.message}`;
+                chatContainer.appendChild(message);
             });
 
-            if (response.status === 200 && response.data.data.length > 0) {
-                const newChats = response.data.data;
-
-                // Append new chats to the DOM
-                newChats.forEach(chat => {
-                    const message = document.createElement('p');
-                    message.textContent = "user: " + chat.message;
-                    chatContainer.appendChild(message);
-                });
-
-                // Update last message timestamp
-                lastMessageTimestamp = newChats[newChats.length - 1].createdAt;
-
-                // Save new chats to local storage
-                saveChatsToLocalStorage(newChats);
-
-                // Scroll to the latest message
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-        } catch (error) {
-            console.error('Error fetching new chats:', error);
+            saveChatsToLocalStorage(newChats);
+            lastTimestamp = new Date(newChats[newChats.length - 1].createdAt).toISOString();
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
     }, 2000);
 });
+

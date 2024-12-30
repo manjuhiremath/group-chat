@@ -11,10 +11,14 @@ import compression from 'compression';
 //Routes
 import loginRouter from './routes/userLogin.js';
 import sendChatRouter from './routes/chats.js';
+import grpChatRouter from './routes/groupchat.js';
 //Models
 import { Users } from './models/User.js';
 import { forgotPasswordRequests } from './models/forgotPasswordRequests.js';
 import { Chat } from './models/ChatModel.js';
+import { Groups } from './models/GroupChatModel.js';
+import { GroupMembers } from './models/GroupMembersModel.js';
+import { Messages } from './models/MessageModel.js';
 
 app.use(
   cors({
@@ -34,6 +38,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(json());
 
 //Routes
+app.use('/api',grpChatRouter);
 app.use('/api', sendChatRouter);
 app.use("/api", loginRouter);
 app.get("/", (req, res) => {
@@ -60,6 +65,25 @@ Chat.belongsTo(Users, { foreignKey: "UserId" });
 
 Users.hasMany(forgotPasswordRequests, { foreignKey: "UserId" });
 forgotPasswordRequests.belongsTo(Users, { foreignKey: "UserId" });
+// Users and Groups
+Users.hasMany(Groups, { foreignKey: "adminId" });
+Groups.belongsTo(Users, { foreignKey: "adminId" });
+
+// Groups and GroupMembers
+Groups.hasMany(GroupMembers, { foreignKey: "groupId" });
+GroupMembers.belongsTo(Groups, { foreignKey: "groupId" });
+
+// Users and GroupMembers
+Users.hasMany(GroupMembers, { foreignKey: "userId" });
+GroupMembers.belongsTo(Users, { foreignKey: "userId" });
+
+// Groups and Messages
+Groups.hasMany(Messages, { foreignKey: "groupId" });
+Messages.belongsTo(Groups, { foreignKey: "groupId" });
+
+// Users and Messages
+Users.hasMany(Messages, { foreignKey: "senderId" });
+Messages.belongsTo(Users, { foreignKey: "senderId" });
 
 
 sequelize
