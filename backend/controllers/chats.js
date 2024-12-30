@@ -27,25 +27,27 @@ export const SendChat = async (req, res) => {
 
   export const getUserChats = async (req, res) => {
     const UserId = req.params.id;
-    
+    const lastTimestamp = req.query.lastTimestamp;
+
     try {
-      const user = await Users.findByPk(UserId);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-  
-      const chats = await Chat.findAll({
-        where: { UserId },
-        order: [['createdAt', 'ASC']], 
-      });
-  
-      if (!chats || chats.length === 0) {
-        return res.status(404).json({ error: "No chats found" });
-      }
-  
-      return res.status(200).json({ success: true, data: chats });
+        const user = await Users.findByPk(UserId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const whereClause = { UserId };
+        if (lastTimestamp) {
+            whereClause.createdAt = { [Op.gt]: new Date(lastTimestamp) }; // Fetch messages after lastTimestamp
+        }
+
+        const chats = await Chat.findAll({
+            where: whereClause,
+            order: [['createdAt', 'ASC']],
+        });
+
+        return res.status(200).json({ success: true, data: chats });
     } catch (error) {
-      console.error("Error fetching chats:", error);
-      return res.status(500).json({ error: "Internal server error" });
+        console.error("Error fetching chats:", error);
+        return res.status(500).json({ error: "Internal server error" });
     }
-  };
+};
