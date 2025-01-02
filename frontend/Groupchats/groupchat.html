@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat App</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px 0;
+            display: block;
+            width: 100%;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        li.active {
+            background: #007bff;
+            color: white;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1>Group Chat Application</h1>
+
+
+
+    <!-- Group Management -->
+    <section id="group-section" >
+        <h2>Manage Groups</h2>
+        <form id="create-group-form">
+            <input type="text" id="group-name" placeholder="Group Name" required />
+            <button type="submit">Create Group</button>
+        </form>
+        <ul id="group-list"></ul>
+    </section>
+
+    <!-- Messages -->
+    <section id="chat-section" >
+        <h2>Group Messages</h2>
+        <div id="chat-messages"></div>
+        <form id="send-message-form">
+            <input type="text" id="message-input" placeholder="Type a message" required />
+            <button type="submit">Send</button>
+        </form>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

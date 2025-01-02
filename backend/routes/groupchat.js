@@ -5,6 +5,7 @@ import {
     getUserGroups,
     sendGroupMessage,
     getGroupMessages,
+    getAvailableUsersForInvite,
 } from "../controllers/groupController.js";
 
 const router = express.Router();
@@ -14,6 +15,7 @@ const router = express.Router();
 // Create a new group
 router.post("/groups", createGroup);
 
+router.get("/groups/:groupId/inviteList/:adminId", getAvailableUsersForInvite);
 // Invite a user to a group
 router.post("/groups/invite", inviteToGroup);
 
@@ -24,7 +26,6 @@ router.get("/users/:userId/groups", getUserGroups);
 
 // Send a message in a group
 router.post("/groups/:groupId/messages", sendGroupMessage);
-
 // Get all messages for a specific group
 router.get("/groups/:groupId/messages", getGroupMessages);
 
