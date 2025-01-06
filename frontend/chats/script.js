@@ -6,7 +6,11 @@ const createGroupButton = document.getElementById('create-group-btn');
 const messageInput = document.getElementById('message');
 const sendButton = document.getElementById('send');
 const chatsDiv = document.getElementById('chats');
+const groupheader = document.getElementById('groupheader');
 let currentGroupId = null;
+let currentGroupName = null;
+groupheader.style.display = 'none';
+
 
 async function fetchGroups() {
     try {
@@ -28,8 +32,9 @@ async function fetchGroups() {
             groupElement.classList.add('group');
             groupElement.textContent = group.name;
             groupElement.dataset.id = group.id;
-
+            
             const inviteButton = document.createElement('button');
+            inviteButton.id = 'invite';
             inviteButton.textContent = 'Invite';
             inviteButton.style.padding = '5px 10px';
             inviteButton.style.background = '#28a745';
@@ -50,7 +55,7 @@ async function fetchGroups() {
             });
 
             groupElement.appendChild(inviteButton);
-            groupElement.addEventListener('click', () => selectGroup(group.id));
+            groupElement.addEventListener('click', () => selectGroup(group.name,group.id));
             groupsContainer.appendChild(groupElement);
         });
     } catch (error) {
@@ -58,12 +63,20 @@ async function fetchGroups() {
     }
 }
 
-async function showInviteModal(groupId) {
+async function showModal(groupId,buttonname) {
     const inviteModal = document.getElementById('inviteModal');
     const userList = document.getElementById('userList');
     try {
-        const response = await axios.get(`${BASE_URL}/groups/${groupId}/inviteList/${userId}`);
-        var users = response.data;
+        if(buttonname === 'invite'){
+            const response = await axios.get(`${BASE_URL}/groups/${groupId}/inviteList/${userId}`);
+            var users = response.data;
+        }else if(buttonname === 'makeadmin'){
+            const response = await axios.get(`${BASE_URL}/groups/${groupId}/nonAdminMembers`);
+            var users = response.data.data;
+        }else if(buttonname === 'remove'){
+            const response = await axios.get(`${BASE_URL}/groups/${groupId}/members`);
+            var users = response.data.data;
+        }
 
         userList.innerHTML = '';
 
@@ -75,11 +88,18 @@ async function showInviteModal(groupId) {
             userItem.style.marginBottom = '5px';
 
             const userName = document.createElement('span');
-            userName.textContent = user.name;
+            if(user.id === userId){
+                userName.textContent = user.name + '(You)';
+            }else{
+                userName.textContent = user.name;
+            }
             userItem.appendChild(userName);
 
             const addButton = document.createElement('button');
-            addButton.textContent = 'Add';
+            if(user.id === userId){
+                addButton.style.display='none';
+            }
+            buttonname === 'invite'? addButton.textContent = 'Add':buttonname === 'makeadmin'?addButton.textContent = 'mark as admin':buttonname=== 'remove'? addButton.textContent='Remove' :addButton.textContent=''
             addButton.style.padding = '5px 10px';
             addButton.style.background = '#28a745';
             addButton.style.color = 'white';
@@ -96,9 +116,16 @@ async function showInviteModal(groupId) {
 
             addButton.addEventListener('click', async () => {
                 try {
-                    await axios.post(`${BASE_URL}/groups/invite`, { userId: user.id, groupId: groupId, adminId: userId });
-
-                    await showInviteModal(groupId);
+                    if(buttonname === 'invite'){
+                        await axios.post(`${BASE_URL}/groups/invite`, { userId: user.id, groupId: groupId, adminId: userId });
+                        await showModal(groupId,'invite');
+                    }else if(buttonname === 'makeadmin'){
+                        await axios.post(`${BASE_URL}/groups/${groupId}/makeAdmin`, {groupId: groupId, currentAdminId : userId, newAdminId:user.id });
+                        await showModal(groupId,'makeadmin');
+                    }else if(buttonname === 'remove'){
+                        await axios.delete(`${BASE_URL}/groups/${groupId}/admin/${userId}/members/${user.id}`, { groupId: groupId, adminId:userId, memberId: user.id });
+                        await showModal(groupId,'remove');
+                    }
                 } catch (error) {
                     console.error('Error sending invite:', error);
                 }
@@ -109,7 +136,7 @@ async function showInviteModal(groupId) {
         });
 
     } catch (error) {
-        userList.innerHTML = '<li>No users available to invite</li>';
+        userList.innerHTML = '<li>No users available</li>';
     }
 
 
@@ -126,6 +153,27 @@ async function showInviteModal(groupId) {
             inviteModal.style.display = 'none';
         }
     });
+}
+async function selectGroup(groupname,groupId) {
+    currentGroupId = groupId;
+    currentGroupName = groupname;
+    console.log(currentGroupName);
+    console.log(currentGroupId);
+    document.getElementById('groupname').innerText = groupname;
+    groupheader.style.display = 'block';
+    document.getElementById('invites').addEventListener('click', ()=>{
+        showModal(currentGroupId,'invite');
+    })
+    document.getElementById('makeadmin').addEventListener('click', ()=>{
+        showModal(currentGroupId,'makeadmin');
+    })
+    document.getElementById('remove').addEventListener('click', ()=>{
+        showModal(currentGroupId,'remove');
+    })
+
+    document.querySelectorAll('.group').forEach(group => group.classList.remove('active'));
+    document.querySelector(`.group[data-id='${groupId}']`).classList.add('active');
+    await loadGroupChats(groupId);
 }
 
 async function createGroup() {
@@ -150,13 +198,6 @@ async function createGroup() {
     }
 }
 
-async function selectGroup(groupId) {
-    currentGroupId = groupId;
-    console.log(currentGroupId);
-    document.querySelectorAll('.group').forEach(group => group.classList.remove('active'));
-    document.querySelector(`.group[data-id='${groupId}']`).classList.add('active');
-    await loadGroupChats(groupId);
-}
 
 async function loadGroupChats(groupId) {
     try {
@@ -179,7 +220,6 @@ sendButton.addEventListener('click', async () => {
         alert('Please select a group first.');
         return;
     }
-    console.log(currentGroupId);
     const message = messageInput.value.trim();
     if (!message) return;
 
@@ -202,6 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 createGroupButton.addEventListener('click', createGroup);
+
 
 
 

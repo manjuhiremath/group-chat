@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Group Chat App</title>
-    <style>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -130,6 +132,21 @@
             outline: none;
         }
 
+        #makeadmin {
+            margin-left: 10px;
+            padding: 10px 15px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #makeadmin:hover {
+            background: #0056b3;
+        }
+
         #send {
             margin-left: 10px;
             padding: 10px 15px;
@@ -146,77 +163,77 @@
         }
 
         .modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-    padding-top: 60px;
-}
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
 
-/* Modal content */
-.modal-content {
-    background-color: #fefefe;
-    margin: 5% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 400px;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+        /* Modal content */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-/* Close button */
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
+        /* Close button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
 
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
 
-/* User List */
-#userList {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    max-height: 200px;
-    overflow-y: auto;
-}
+        /* User List */
+        #userList {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
 
-#userList li {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    cursor: pointer;
-}
+        #userList li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
 
-#userList li:hover {
-    background-color: #f0f0f0;
-}
+        #userList li:hover {
+            background-color: #f0f0f0;
+        }
 
-#sendInvite {
-    background-color: #28a745;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
+        #sendInvite {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-#sendInvite:hover {
-    background-color: #218838;
-}
-    </style>
+        #sendInvite:hover {
+            background-color: #218838;
+        }
+    </style> -->
 </head>
 
 <body>
@@ -233,6 +250,15 @@
         <!-- Chat Section -->
         <div class="chat-section">
             <!-- <h1>Group Chat</h1> -->
+
+            <div id="groupheader">
+                <h4 id="groupname">Group Name</h4>
+                <button id="invites">Invite</button>
+                <button id="makeadmin">Make Admin</button>
+                <button id="remove">Remove</button>
+            </div>
+
+
             <div id="chat">
                 <div id="chat-window">
                     <div id="chats"></div>
@@ -245,8 +271,7 @@
         </div>
         <div id="inviteModal" class="modal">
             <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Select User to Invite</h2>
+                    <span class="close">&times;</span>
                 <ul id="userList"></ul>
             </div>
         </div>
@@ -254,7 +279,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
     <script defer src="script.js">
-        
+
     </script>
 </body>
 

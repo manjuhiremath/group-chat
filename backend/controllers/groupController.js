@@ -66,7 +66,6 @@ export const getAvailableUsersForInvite = async (req, res) => {
 
 export const getUserGroups = async (req, res) => {
     const userId = req.params.userId;
-    // console.log(userId);
     try {
         const groups = await Groups.findAll({
             where: { adminId: userId }
@@ -117,18 +116,17 @@ export const getGroupMessages = async (req, res) => {
             order: [["createdAt", "ASC"]],
             include: [
                 {
-                    model: Users, // Assuming the `Users` model is associated with `Messages`
-                    attributes: ["name"], // Retrieve the sender's name
+                    model: Users, 
+                    attributes: ["name"], 
                 },
             ],
         });
 
-        // Transform the data to include the sender name directly
         const formattedMessages = messages.map(message => ({
             id: message.id,
             text: message.message,
             createdAt: message.createdAt,
-            senderName: message.User ? message.User.name : "Unknown", // Add sender name or fallback to 'Unknown'
+            senderName: message.User ? message.User.name : "Unknown", 
         }));
         console.log(formattedMessages);
         return res.status(200).json({ success: true, data: formattedMessages });
@@ -141,25 +139,21 @@ export const getGroupMessages = async (req, res) => {
 export const createGroup = async (req, res) => {
     const { userId, groupName } = req.body;
 
-    // Validate input
     if (!userId || !groupName) {
         return res.status(400).json({ error: "userId and groupName are required" });
     }
 
     try {
-        // Check if the user exists
         const user = await Users.findByPk(userId);
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Create the group
         const group = await Groups.create({
             name: groupName,
             adminId: userId,
         });
 
-        // Add the creator as the first member of the group
         await GroupMembers.create({
             groupId: group.id,
             userId: userId,
@@ -172,6 +166,149 @@ export const createGroup = async (req, res) => {
         });
     } catch (error) {
         console.error("Error creating group:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+
+export const makeGroupAdmin = async (req, res) => {
+    const { groupId, currentAdminId, newAdminId } = req.body;
+
+    if (!groupId || !currentAdminId || !newAdminId) {
+        return res.status(400).json({ error: "groupId, currentAdminId, and newAdminId are required" });
+    }
+
+    try {
+        const group = await Groups.findByPk(groupId);
+
+        if (!group || group.adminId !== currentAdminId) {
+            return res.status(403).json({ error: "Only the current admin can assign a new admin" });
+        }
+
+        const isMember = await GroupMembers.findOne({ where: { groupId, userId: newAdminId } });
+        if (!isMember) {
+            return res.status(400).json({ error: "The new admin must be a member of the group" });
+        }
+
+        group.adminId = newAdminId;
+        await group.save();
+
+        return res.status(200).json({ success: true, message: "New admin assigned successfully" });
+    } catch (error) {
+        console.error("Error assigning new admin:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+export const getNonAdminGroupMembers = async (req, res) => {
+    const { groupId } = req.params;
+
+    if (!groupId) {
+        return res.status(400).json({ error: "groupId is required" });
+    }
+
+    try {
+        // Fetch the group details
+        const group = await Groups.findByPk(groupId);
+
+        if (!group) {
+            return res.status(404).json({ error: "Group not found" });
+        }
+
+        // Get all members of the group excluding the current admin
+        const nonAdminMembers = await GroupMembers.findAll({
+            where: {
+                groupId,
+                userId: { [Op.ne]: group.adminId }, // Exclude the current admin
+            },
+            include: [
+                {
+                    model: Users,
+                    attributes: ["id", "name"], // Fetch only necessary fields
+                },
+            ],
+        });
+
+        if (nonAdminMembers.length === 0) {
+            return res.status(404).json({ error: "No non-admin members found in the group" });
+        }
+
+        // Format the response to return member details
+        const formattedMembers = nonAdminMembers.map(member => ({
+            id: member.User.id,
+            name: member.User.name,
+        }));
+
+        return res.status(200).json({ success: true, data: formattedMembers });
+    } catch (error) {
+        console.error("Error fetching non-admin group members:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+export const removeGroupMember = async (req, res) => {
+    const { groupId, adminId, memberId } = req.params;
+
+    if (!groupId || !adminId || !memberId) {
+        return res.status(400).json({ error: "groupId, adminId, and memberId are required" });
+    }
+    try {
+        const group = await Groups.findByPk(groupId);
+
+        if (!group || group.adminId !== adminId) {
+            return res.status(403).json({ error: "Only the admin can remove users from the group" });
+        }
+
+        const member = await GroupMembers.findOne({ where: { groupId, userId: memberId } });
+        if (!member) {
+            return res.status(404).json({ error: "The specified member is not part of the group" });
+        }
+
+        await GroupMembers.destroy({ where: { groupId, userId: memberId } });
+
+        return res.status(200).json({ success: true, message: "Member removed successfully" });
+    } catch (error) {
+        console.error("Error removing member from group:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+export const getGroupMembers = async (req, res) => {
+    const { groupId } = req.params;
+
+    if (!groupId) {
+        return res.status(400).json({ error: "groupId is required" });
+    }
+
+    try {
+        const group = await Groups.findByPk(groupId);
+
+        if (!group) {
+            return res.status(404).json({ error: "Group not found" });
+        }
+
+        // Fetch group members and include user details
+        const members = await GroupMembers.findAll({
+            where: { groupId },
+            include: [
+                {
+                    model: Users, // Assuming Users model is associated with GroupMembers
+                    attributes: ["id", "name", "email"], // Include fields to display
+                },
+            ],
+        });
+
+        if (members.length === 0) {
+            return res.status(404).json({ error: "No members found in the group" });
+        }
+
+        const formattedMembers = members.map(member => ({
+            id: member.User.id,
+            name: member.User.name,
+            email: member.User.email,
+        }));
+
+        return res.status(200).json({ success: true, data: formattedMembers });
+    } catch (error) {
+        console.error("Error fetching group members:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 };

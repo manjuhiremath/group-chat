@@ -6,27 +6,25 @@ import {
     sendGroupMessage,
     getGroupMessages,
     getAvailableUsersForInvite,
+    makeGroupAdmin,
+    removeGroupMember,
+    getNonAdminGroupMembers,
+    getGroupMembers,
 } from "../controllers/groupController.js";
 
 const router = express.Router();
 
 // Group Management Routes
 
-// Create a new group
 router.post("/groups", createGroup);
-
 router.get("/groups/:groupId/inviteList/:adminId", getAvailableUsersForInvite);
-// Invite a user to a group
 router.post("/groups/invite", inviteToGroup);
-
-// Get all groups a user belongs to
 router.get("/users/:userId/groups", getUserGroups);
-
-// Messaging Routes
-
-// Send a message in a group
 router.post("/groups/:groupId/messages", sendGroupMessage);
-// Get all messages for a specific group
 router.get("/groups/:groupId/messages", getGroupMessages);
+router.get("/groups/:groupId/nonAdminMembers", getNonAdminGroupMembers);
+router.post("/groups/:groupId/makeAdmin", makeGroupAdmin);
+router.get("/groups/:groupId/members", getGroupMembers);
+router.delete("/groups/:groupId/admin/:adminId/members/:memberId", removeGroupMember);
 
 export default router;

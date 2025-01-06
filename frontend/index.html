@@ -15,6 +15,7 @@
         height: 100vh;
         background-color: #f4f4f4;
       }
+  
       .container {
         width: 100%;
         max-width: 400px;
@@ -23,17 +24,20 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
       }
+  
       h2 {
         margin-bottom: 20px;
         text-align: center;
       }
+  
       input {
-        width: 100%;
+        width: 95%;
         padding: 10px;
         margin: 10px 0;
         border: 1px solid #ccc;
         border-radius: 5px;
       }
+  
       button {
         width: 100%;
         padding: 10px;
@@ -44,59 +48,75 @@
         cursor: pointer;
         border-radius: 5px;
       }
+  
       button:hover {
         background-color: #218838;
       }
+  
       .message {
         margin: 10px 0;
         text-align: center;
       }
+  
       .error {
         color: red;
       }
+  
       .success {
-        color: green;
+        color: #218838;
+      }
+  
+      .centre {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+  
+      .auth-nav {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 300px;
+        /* Adjust the width as needed */
+      }
+  
+      .auth-nav button {
+        flex: 1;
+        margin: 0 5px;
+        /* Add some spacing between the buttons */
       }
     </style>
   </head>
   <body>
     <!-- Navigation Buttons -->
-    <div class="container"><div class=" centre">
-    <div class="auth-nav row">
-      <button id="show-signup" class=" btn-primary w-50">Sign-Up</button>
-      <button id="show-login" class="nav-button w-50">Login</button>
+    <div class="container">
+      <div class="centre">
+        <div class="auth-nav row">
+          <button id="show-signup" class="btn-primary w-50">Sign-Up</button>
+          <button id="show-login" class="nav-button w-50">Login</button>
+        </div>
+      </div>
+      <!-- Sign-Up Form -->
+      <form id="signup-form" class="auth-form">
+        <h2>Sign-Up</h2>
+        <input type="text" id="signup-name" placeholder="Name" required />
+        <input type="email" id="signup-email" placeholder="Email" required />
+        <input type="password" id="signup-password" placeholder="Password" required />
+        <button id="signup-button">Sign Up</button>
+        <p id="signup-message"></p>
+      </form>
+  
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form" >
+        <h2>Login</h2>
+        <input type="email" id="login-email" placeholder="Email" required />
+        <input type="password" id="login-password" placeholder="Password" required />
+        <button id="login-button">Login</button>
+        <p id="login-message"></p>
+      </form>
+      <a id="forgot" href="../ForgotPassword/forgotpassword.html">forgot password?</a>
     </div>
-  </div>
-    <!-- Sign-Up Form -->
-    <form id="signup-form" class="auth-form">
-      <h2>Sign-Up</h2>
-      <input type="text" id="signup-name" placeholder="Name" required />
-      <input type="email" id="signup-email" placeholder="Email" required />
-      <input
-        type="password"
-        id="signup-password"
-        placeholder="Password"
-        required
-      />
-      <button id="signup-button">Sign Up</button>
-      <p id="signup-message"></p>
-    </form>
-
-    <!-- Login Form -->
-    <form id="login-form" class="auth-form" style="display: none;">
-      <h2>Login</h2>
-      <input type="email" id="login-email" placeholder="Email" required />
-      <input
-        type="password"
-        id="login-password"
-        placeholder="Password"
-        required
-      />
-      <button id="login-button">Login</button>
-      <p id="login-message"></p>
-    </form>
-    <a href="./ForgotPassword/index.html">forgot password?</a>
-  </div>
+  
     <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
 
     <!-- Popper.js (Required by Bootstrap for tooltips, dropdowns, etc.) -->
