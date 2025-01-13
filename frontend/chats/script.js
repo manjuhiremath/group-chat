@@ -30,32 +30,10 @@ async function fetchGroups() {
             groupElement.style.background = '#A19AD3';
             groupElement.style.color = 'white';
             groupElement.classList.add('group');
-            groupElement.textContent = group.name;
-            groupElement.dataset.id = group.id;
+            groupElement.textContent = group.groupName;
+            groupElement.dataset.id = group.groupId;
             
-            const inviteButton = document.createElement('button');
-            inviteButton.id = 'invite';
-            inviteButton.textContent = 'Invite';
-            inviteButton.style.padding = '5px 10px';
-            inviteButton.style.background = '#28a745';
-            inviteButton.style.color = 'white';
-            inviteButton.style.border = 'none';
-            inviteButton.style.borderRadius = '5px';
-            inviteButton.style.cursor = 'pointer';
-
-            inviteButton.addEventListener('mouseover', () => {
-                inviteButton.style.background = '#218838';
-            });
-            inviteButton.addEventListener('mouseout', () => {
-                inviteButton.style.background = '#28a745';
-            });
-
-            inviteButton.addEventListener('click', async () => {
-                showInviteModal(group.id);
-            });
-
-            groupElement.appendChild(inviteButton);
-            groupElement.addEventListener('click', () => selectGroup(group.name,group.id));
+            groupElement.addEventListener('click', () => selectGroup(group.groupName,group.groupId));
             groupsContainer.appendChild(groupElement);
         });
     } catch (error) {
@@ -154,27 +132,42 @@ async function showModal(groupId,buttonname) {
         }
     });
 }
-async function selectGroup(groupname,groupId) {
+let chatInterval; // Variable to store the interval ID
+
+async function selectGroup(groupname, groupId) {
     currentGroupId = groupId;
     currentGroupName = groupname;
     console.log(currentGroupName);
     console.log(currentGroupId);
     document.getElementById('groupname').innerText = groupname;
     groupheader.style.display = 'block';
-    document.getElementById('invites').addEventListener('click', ()=>{
-        showModal(currentGroupId,'invite');
-    })
-    document.getElementById('makeadmin').addEventListener('click', ()=>{
-        showModal(currentGroupId,'makeadmin');
-    })
-    document.getElementById('remove').addEventListener('click', ()=>{
-        showModal(currentGroupId,'remove');
-    })
 
+    // Add event listeners for modal actions
+    document.getElementById('invites').addEventListener('click', () => {
+        showModal(currentGroupId, 'invite');
+    });
+    document.getElementById('makeadmin').addEventListener('click', () => {
+        showModal(currentGroupId, 'makeadmin');
+    });
+    document.getElementById('remove').addEventListener('click', () => {
+        showModal(currentGroupId, 'remove');
+    });
+
+    // Highlight the selected group
     document.querySelectorAll('.group').forEach(group => group.classList.remove('active'));
     document.querySelector(`.group[data-id='${groupId}']`).classList.add('active');
-    await loadGroupChats(groupId);
+
+    // Clear any existing interval to prevent overlapping
+    if (chatInterval) {
+        clearInterval(chatInterval);
+    }
+
+    // Set a new interval to load group chats every 500 milliseconds
+    chatInterval = setInterval(async () => {
+        await loadGroupChats(groupId);
+    }, 500);
 }
+
 
 async function createGroup() {
     const groupName = prompt('Enter group name:');
@@ -201,15 +194,17 @@ async function createGroup() {
 
 async function loadGroupChats(groupId) {
     try {
-        const response = await axios.get(`${BASE_URL}/groups/${groupId}/messages`);
-        const chats = response.data.data;
-        chatsDiv.innerHTML = ''; // Clear previous chats
-        console.log(chats);
-        chats.forEach(chat => {
-            const chatElement = document.createElement('div');
-            chatElement.textContent = `${chat.senderName}: ${chat.text}`;
-            chatsDiv.appendChild(chatElement);
-        });
+       
+            const response = await axios.get(`${BASE_URL}/groups/${groupId}/messages`);
+            const chats = response.data.data;
+            chatsDiv.innerHTML = ''; // Clear previous chats
+            chats.forEach(chat => {
+                const chatElement = document.createElement('div');
+                chatElement.textContent = `${chat.senderName}: ${chat.text}`;
+                chatsDiv.appendChild(chatElement);
+            });
+      
+       
     } catch (error) {
         console.error('Error loading group chats:', error);
     }
@@ -229,7 +224,6 @@ sendButton.addEventListener('click', async () => {
             senderId: userId,
             message
         });
-        alert('Message sent successfully');
         messageInput.value = '';
         await loadGroupChats(currentGroupId);
     } catch (error) {

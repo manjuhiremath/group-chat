@@ -66,11 +66,33 @@ export const getAvailableUsersForInvite = async (req, res) => {
 
 export const getUserGroups = async (req, res) => {
     const userId = req.params.userId;
+
     try {
-        const groups = await Groups.findAll({
-            where: { adminId: userId }
+        // Find all group memberships for the user
+        const groupMembers = await GroupMembers.findAll({
+            where: { userId: userId },
+            include: [
+                {
+                    model: Groups, // Groups model for group details
+                    attributes: ["id", "name", "createdAt"], // Select desired fields
+                },
+            ],
         });
-        return res.status(200).json({ success: true, data: groups });
+
+        // Check if user belongs to any groups
+        if (groupMembers.length === 0) {
+            return res.status(404).json({ success: false, message: "No groups found for this user." });
+        }
+
+        // Format the response data
+        const formattedGroups = groupMembers.map((member) => ({
+            groupId: member.groupId,
+            groupName: member.Group ? member.Group.name : "Unknown",
+            joinedAt: member.joinedAt,
+        }));
+
+        console.log("Formatted Groups:", formattedGroups);
+        return res.status(200).json({ success: true, data: formattedGroups });
     } catch (error) {
         console.error("Error fetching user groups:", error);
         return res.status(500).json({ error: "Internal server error" });

@@ -58,13 +58,14 @@ const start = async () => {
   }
 };
 
+// Users and Chat
+Users.hasMany(Chat, { foreignKey: "userId" });
+Chat.belongsTo(Users, { foreignKey: "userId" });
 
-//Associations
-Users.hasMany(Chat, { foreignKey: "UserId" });
-Chat.belongsTo(Users, { foreignKey: "UserId" });
+// Users and ForgotPasswordRequests
+Users.hasMany(forgotPasswordRequests, { foreignKey: "userId" });
+forgotPasswordRequests.belongsTo(Users, { foreignKey: "userId" });
 
-Users.hasMany(forgotPasswordRequests, { foreignKey: "UserId" });
-forgotPasswordRequests.belongsTo(Users, { foreignKey: "UserId" });
 // Users and Groups
 Users.hasMany(Groups, { foreignKey: "adminId" });
 Groups.belongsTo(Users, { foreignKey: "adminId" });
@@ -84,6 +85,7 @@ Messages.belongsTo(Groups, { foreignKey: "groupId" });
 // Users and Messages
 Users.hasMany(Messages, { foreignKey: "senderId" });
 Messages.belongsTo(Users, { foreignKey: "senderId" });
+
 
 
 sequelize
